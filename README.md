@@ -1,27 +1,20 @@
 # AnderShell 3000
 
-A retro-looking shell using CSS and JavaScript.
-
-Somewhat inspired by PipBoy and old-school UNIX terminals.
+A retro-looking shell using CSS and JavaScript (fork of [retro-css-shell-demo](https://github.com/andersevenrud/retro-css-shell-demo)).
 
 ![Screenshot](https://raw.githubusercontent.com/andersevenrud/retro-css-shell-demo/master/screenshot.png)
 
-# Demo
+# Features
 
-[See it in action here](https://crt.no/) ([old version](http://andersevenrud.github.io/shell/))
-
-*Please note that this demo is currently outdated and will be updated asap*
+1. Added input lock;
+1. Added loader.
 
 # Running
 
-Just serve `dist/` and you're good to go.
+1. Import terminal
+2. Create terminal class instance
 
 # Development
 
-Run `npm install`.
-
-* `npm run serve` - Development server
-* `npm run build` - Build
-* `npm run watch` - Watch for changes (not needed with dev server)
 * `npm run eslint` - Run eslint pass
 * `npm run stylelint` - Run stylelint pass
