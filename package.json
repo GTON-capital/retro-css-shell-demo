@@ -1,19 +1,16 @@
 {
-  "name": "crt",
-  "version": "1.0.0",
-  "description": "CRT Monitor Demo",
-  "main": "index.js",
+  "name": "crt-terminal",
+  "version": "1.0.2",
+  "description": "CRT Terminal",
+  "main": "./src/terminal.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "webpack",
-    "watch": "webpack --watch",
-    "serve": "webpack-dev-server",
     "eslint": "eslint src/**/*.js",
-    "stylelint": "eslint src/**/*.scss"
+    "stylelint": "eslint src/**/*.scss",
+    "pub": "yarn publish"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/andersevenrud/retro-css-shell-demo.git"
+    "url": "git+https://github.com/essserrr/retro-css-shell-demo.git"
   },
   "keywords": [
     "css"
@@ -21,9 +18,9 @@
   "author": "Anders Evenrud <andersevenrud@gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/andersevenrud/retro-css-shell-demo/issues"
+    "url": "https://github.com/essserrr/retro-css-shell-demo/issues"
   },
-  "homepage": "https://github.com/andersevenrud/retro-css-shell-demo#readme",
+  "homepage": "https://github.com/essserrr/retro-css-shell-demo#readme",
   "devDependencies": {
     "@babel/core": "^7.0.0-rc.1",
     "@babel/plugin-transform-runtime": "^7.0.0-rc.1",
