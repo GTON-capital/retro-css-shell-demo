@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * AnderShell - Just a small CSS demo
  *
@@ -26,16 +27,21 @@
  */
 
 // Creates initial options
-const createOptions = opts => Object.assign({}, {
-  banner: 'Hello World',
-  prompt: () => '$ > ',
-  tickrate: 1000 / 60,
-  buflen: 8,
-  commands: {}
-}, opts || {});
+const createOptions = (opts) =>
+  Object.assign(
+    {},
+    {
+      banner: 'Hello World',
+      prompt: () => '$ > ',
+      tickrate: 1000 / 60,
+      buflen: 8,
+      commands: {},
+    },
+    opts || {},
+  );
 
 // Creates our textarea element
-const createElement = root => {
+const createElement = (root) => {
   const el = document.createElement('textarea');
   el.contentEditable = true;
   el.spellcheck = false;
@@ -49,7 +55,7 @@ const createElement = root => {
 // Keys that must be ignored
 
 // Sets text selection range
-const setSelectionRange = input => {
+const setSelectionRange = (input) => {
   const length = input.value.length;
 
   if (input.setSelectionRange) {
@@ -65,8 +71,8 @@ const setSelectionRange = input => {
 };
 
 // Gets the font size of an element
-const getFontSize = element => parseInt(window.getComputedStyle(element)
-  .getPropertyValue('font-size'), 10);
+const getFontSize = (element) =>
+  parseInt(window.getComputedStyle(element).getPropertyValue('font-size'), 10);
 
 // Creates the rendering loop
 const renderer = (tickrate, onrender) => {
@@ -89,7 +95,7 @@ const renderer = (tickrate, onrender) => {
 };
 
 // Pronts buffer onto the textarea
-const printer = ($element, buflen) => buffer => {
+const printer = ($element, buflen) => (buffer) => {
   if (buffer.length > 0) {
     const len = Math.min(buflen, buffer.length);
     const val = buffer.splice(0, len);
@@ -106,9 +112,9 @@ const printer = ($element, buflen) => buffer => {
 };
 
 // Parses input
-const parser = onparsed => str => {
+const parser = (onparsed) => (str) => {
   if (str.length) {
-    const args = str.split(' ').map(s => s.trim());
+    const args = str.split(' ').map((s) => s.trim());
     const cmd = args.splice(0, 1)[0];
     console.debug(cmd, args);
     onparsed(cmd, ...args);
@@ -116,28 +122,30 @@ const parser = onparsed => str => {
 };
 
 // Command executor
-const executor = commands => (cmd, ...args) => cb => {
-  try {
-    commands[cmd]
-      ? cb(commands[cmd](...args) + '\n')
-      : cb(`No such command '${cmd}'\n`);
-  } catch (e) {
-    console.warn(e);
-    cb(`Exception: ${e}\n`);
-  }
-};
+const executor =
+  (commands) =>
+  (cmd, ...args) =>
+  (cb) => {
+    try {
+      // cb(''); !!!!!
+    } catch (e) {
+      console.warn(e);
+      cb(`Exception: ${e}\n`);
+    }
+  };
 
 // Handle keyboard events
-const keyboard = (parse) => {
+const keyboard = (parse, callback) => {
   let input = [];
-  const keys = {8: 'backspace', 13: 'enter'};
-  const ignoreKey = code => code >= 33 && code <= 40;
-  const key = ev => keys[ev.which || ev.keyCode];
+  const keys = { 8: 'backspace', 13: 'enter' };
+  const ignoreKey = (code) => code >= 33 && code <= 40;
+  const key = (ev) => keys[ev.which || ev.keyCode];
 
   return {
     keypress: (ev) => {
       if (key(ev) === 'enter') {
         const str = input.join('').trim();
+        if (callback) callback(str);
         parse(str);
         input = [];
       } else if (key(ev) !== 'backspace') {
@@ -155,28 +163,98 @@ const keyboard = (parse) => {
       } else if (ignoreKey(ev.keyCode)) {
         ev.preventDefault();
       }
-    }
+    },
   };
 };
+
+class Loader {
+  constructor(target, loadingSymbol) {
+    this._loading = false;
+    this._target = target;
+    this._count = 0;
+    this._loadingSymbol = loadingSymbol || '.';
+
+    this._startLoading = this._startLoading.bind(this);
+    this._endLoading = this._endLoading.bind(this);
+    this.setLoading = this.setLoading.bind(this);
+    this.isLoading = this.isLoading.bind(this);
+    this._clearLoading = this._clearLoading.bind(this);
+    this._addDot = this._addDot.bind(this);
+  }
+
+  _clearLoading() {
+    const value = this._target.value;
+    this._target.value = value.substring(
+      0,
+      value.length - this._count * this._loadingSymbol.length,
+    );
+    this._count = 0;
+  }
+
+  _addDot() {
+    this._target.value += this._loadingSymbol;
+    this._count += 1;
+  }
+
+  isLoading() {
+    return this._loading;
+  }
+
+  _startLoading() {
+    if (this._loading) return;
+    this._loading = true;
+
+    const interval = setInterval(() => {
+      if (!this._loading) {
+        clearInterval(interval);
+        return;
+      }
+
+      if (this._count >= 4) this._clearLoading();
+      this._addDot();
+    }, 1000);
+  }
+
+  _endLoading() {
+    if (!this._loading) return;
+    this._loading = false;
+
+    if (this._count === 0) return;
+    this._clearLoading();
+  }
+
+  setLoading(status) {
+    if (status === true) {
+      this._startLoading();
+    } else {
+      this._endLoading();
+    }
+  }
+}
 
 // Creates the terminal
 export const terminal = (opts) => {
   let buffer = []; // What will be output to display
   let busy = false; // If we cannot type at the moment
+  let isLocked = false; // Lock input
 
-  const {prompt, banner, commands, buflen, tickrate} = createOptions(opts);
-  const $root = document.querySelector('#terminal');
+  const { prompt, banner, commands, buflen, tickrate, root, callback } = createOptions(opts);
+  const $root = root;
   const $element = createElement($root);
   const fontSize = getFontSize($element);
   const width = $element.offsetWidth;
   const cwidth = Math.round((width / fontSize) * 1.9); // FIXME: Should be calculated via canvas
 
+  const loader = new Loader($element);
+
   const output = (output, center) => {
+    if (loader.isLoading()) loader.setLoading(false);
+
     let lines = output.split(/\n/);
     if (center) {
-      lines = lines.map(line => line.length > 0
-        ? line.padStart(line.length + ((cwidth / 2) - (line.length / 2)), ' ')
-        : line);
+      lines = lines.map((line) =>
+        line.length > 0 ? line.padStart(line.length + (cwidth / 2 - line.length / 2), ' ') : line,
+      );
     }
 
     const append = lines.join('\n') + '\n' + prompt();
@@ -190,11 +268,10 @@ export const terminal = (opts) => {
   const render = renderer(tickrate, onrender);
   const parse = parser(onparsed);
   const focus = () => setTimeout(() => $element.focus(), 1);
-  const kbd = keyboard(parse);
+  const kbd = keyboard(parse, callback);
   const clear = () => ($element.value = '');
-  const input = ev => busy
-    ? ev.preventDefault()
-    : kbd[ev.type](ev);
+  const input = (ev) => (busy || isLocked ? ev.preventDefault() : kbd[ev.type](ev));
+  const inputLock = (lock) => (isLocked = Boolean(lock));
 
   $element.addEventListener('focus', () => setSelectionRange($element));
   $element.addEventListener('blur', focus);
@@ -205,8 +282,26 @@ export const terminal = (opts) => {
   $root.appendChild($element);
 
   render();
-  output(banner, true);
+  output(banner, false);
   focus();
 
-  return {focus, parse, clear, print: output};
+  const destroy = () => {
+    $element.removeEventListener('focus', () => setSelectionRange($element));
+    $element.removeEventListener('blur', focus);
+    $element.removeEventListener('keypress', input);
+    $element.removeEventListener('keydown', input);
+    window.removeEventListener('focus', focus);
+    $root.removeEventListener('click', focus);
+    $root.innerHtml = '';
+  };
+
+  return {
+    focus,
+    parse,
+    clear,
+    print: output,
+    destroy,
+    inputLock,
+    setLoading: loader.setLoading,
+  };
 };
