@@ -35,7 +35,6 @@ const createOptions = (opts) =>
       prompt: () => '$ > ',
       tickrate: 1000 / 60,
       buflen: 8,
-      commands: {},
     },
     opts || {},
   );
@@ -238,7 +237,8 @@ export const terminal = (opts) => {
   let busy = false; // If we cannot type at the moment
   let isLocked = false; // Lock input
 
-  const { prompt, banner, commands, buflen, tickrate, root, callback } = createOptions(opts);
+  const { prompt, banner, buflen, tickrate, root, callback } = createOptions(opts);
+  const commands = {}
   const $root = root;
   const $element = createElement($root);
   const fontSize = getFontSize($element);
