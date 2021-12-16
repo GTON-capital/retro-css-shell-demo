@@ -31,20 +31,20 @@ const createOptions = (opts) =>
   Object.assign(
     {},
     {
-      banner: 'Hello World',
-      prompt: () => '$ > ',
+      banner: "Hello World",
+      prompt: () => "$ > ",
       tickrate: 1000 / 60,
       buflen: 8,
     },
-    opts || {},
+    opts || {}
   );
 
 // Creates our textarea element
 const createElement = (root) => {
-  const el = document.createElement('textarea');
+  const el = document.createElement("textarea");
   el.contentEditable = true;
   el.spellcheck = false;
-  el.value = '';
+  el.value = "";
 
   root.appendChild(el);
 
@@ -63,15 +63,15 @@ const setSelectionRange = (input) => {
   } else if (input.createTextRange) {
     const range = input.createTextRange();
     range.collapse(true);
-    range.moveEnd('character', length);
-    range.moveStart('character', length);
+    range.moveEnd("character", length);
+    range.moveStart("character", length);
     range.select();
   }
 };
 
 // Gets the font size of an element
 const getFontSize = (element) =>
-  parseInt(window.getComputedStyle(element).getPropertyValue('font-size'), 10);
+  parseInt(window.getComputedStyle(element).getPropertyValue("font-size"), 10);
 
 // Creates the rendering loop
 const renderer = (tickrate, onrender) => {
@@ -99,7 +99,7 @@ const printer = ($element, buflen) => (buffer) => {
     const len = Math.min(buflen, buffer.length);
     const val = buffer.splice(0, len);
 
-    $element.value += val.join('');
+    $element.value += val.join("");
 
     setSelectionRange($element);
     $element.scrollTop = $element.scrollHeight;
@@ -110,50 +110,26 @@ const printer = ($element, buflen) => (buffer) => {
   return false;
 };
 
-// Parses input
-const parser = (onparsed) => (str) => {
-  if (str.length) {
-    const args = str.split(' ').map((s) => s.trim());
-    const cmd = args.splice(0, 1)[0];
-    console.debug(cmd, args);
-    onparsed(cmd, ...args);
-  }
-};
-
-// Command executor
-const executor =
-  (commands) =>
-  (cmd, ...args) =>
-  (cb) => {
-    try {
-      // cb(''); !!!!!
-    } catch (e) {
-      console.warn(e);
-      cb(`Exception: ${e}\n`);
-    }
-  };
-
 // Handle keyboard events
-const keyboard = (parse, callback) => {
+const keyboard = (callback) => {
   let input = [];
-  const keys = { 8: 'backspace', 13: 'enter' };
+  const keys = { 8: "backspace", 13: "enter" };
   const ignoreKey = (code) => code >= 33 && code <= 40;
   const key = (ev) => keys[ev.which || ev.keyCode];
 
   return {
     keypress: (ev) => {
-      if (key(ev) === 'enter') {
-        const str = input.join('').trim();
+      if (key(ev) === "enter") {
+        const str = input.join("").trim();
         if (callback) callback(str);
-        parse(str);
         input = [];
-      } else if (key(ev) !== 'backspace') {
+      } else if (key(ev) !== "backspace") {
         input.push(String.fromCharCode(ev.which || ev.keyCode));
       }
     },
 
     keydown: (ev) => {
-      if (key(ev) === 'backspace') {
+      if (key(ev) === "backspace") {
         if (input.length > 0) {
           input.pop();
         } else {
@@ -161,6 +137,10 @@ const keyboard = (parse, callback) => {
         }
       } else if (ignoreKey(ev.keyCode)) {
         ev.preventDefault();
+      } else if (key(ev) === "enter") {
+        if (input.length === 0) {
+          ev.preventDefault();
+        }
       }
     },
   };
@@ -171,7 +151,7 @@ class Loader {
     this._loading = false;
     this._target = target;
     this._count = 0;
-    this._loadingSymbol = loadingSymbol || '.';
+    this._loadingSymbol = loadingSymbol || ".";
 
     this._startLoading = this._startLoading.bind(this);
     this._endLoading = this._endLoading.bind(this);
@@ -185,7 +165,7 @@ class Loader {
     const value = this._target.value;
     this._target.value = value.substring(
       0,
-      value.length - this._count * this._loadingSymbol.length,
+      value.length - this._count * this._loadingSymbol.length
     );
     this._count = 0;
   }
@@ -237,8 +217,8 @@ export const terminal = (opts) => {
   let busy = false; // If we cannot type at the moment
   let isLocked = false; // Lock input
 
-  const { prompt, banner, buflen, tickrate, root, callback } = createOptions(opts);
-  const commands = {}
+  const { prompt, banner, buflen, tickrate, root, callback } =
+    createOptions(opts);
   const $root = root;
   const $element = createElement($root);
   const fontSize = getFontSize($element);
@@ -253,32 +233,33 @@ export const terminal = (opts) => {
     let lines = output.split(/\n/);
     if (center) {
       lines = lines.map((line) =>
-        line.length > 0 ? line.padStart(line.length + (cwidth / 2 - line.length / 2), ' ') : line,
+        line.length > 0
+          ? line.padStart(line.length + (cwidth / 2 - line.length / 2), " ")
+          : line
       );
     }
 
-    const append = lines.join('\n') + '\n' + prompt();
-    buffer = buffer.concat(append.split(''));
+    const append = lines.join("\n") + "\n" + prompt();
+    buffer = buffer.concat(append.split(""));
   };
 
   const print = printer($element, buflen);
-  const execute = executor(commands);
   const onrender = () => (busy = print(buffer));
-  const onparsed = (cmd, ...args) => execute(cmd, ...args)(output);
   const render = renderer(tickrate, onrender);
-  const parse = parser(onparsed);
+
   const focus = () => setTimeout(() => $element.focus(), 1);
-  const kbd = keyboard(parse, callback);
-  const clear = () => ($element.value = '');
-  const input = (ev) => (busy || isLocked ? ev.preventDefault() : kbd[ev.type](ev));
+  const kbd = keyboard(callback);
+  const clear = () => ($element.value = "");
+  const input = (ev) =>
+    busy || isLocked ? ev.preventDefault() : kbd[ev.type](ev);
   const inputLock = (lock) => (isLocked = Boolean(lock));
 
-  $element.addEventListener('focus', () => setSelectionRange($element));
-  $element.addEventListener('blur', focus);
-  $element.addEventListener('keypress', input);
-  $element.addEventListener('keydown', input);
-  window.addEventListener('focus', focus);
-  $root.addEventListener('click', focus);
+  $element.addEventListener("focus", () => setSelectionRange($element));
+  $element.addEventListener("blur", focus);
+  $element.addEventListener("keypress", input);
+  $element.addEventListener("keydown", input);
+  window.addEventListener("focus", focus);
+  $root.addEventListener("click", focus);
   $root.appendChild($element);
 
   render();
@@ -286,18 +267,17 @@ export const terminal = (opts) => {
   focus();
 
   const destroy = () => {
-    $element.removeEventListener('focus', () => setSelectionRange($element));
-    $element.removeEventListener('blur', focus);
-    $element.removeEventListener('keypress', input);
-    $element.removeEventListener('keydown', input);
-    window.removeEventListener('focus', focus);
-    $root.removeEventListener('click', focus);
-    $root.innerHtml = '';
+    $element.removeEventListener("focus", () => setSelectionRange($element));
+    $element.removeEventListener("blur", focus);
+    $element.removeEventListener("keypress", input);
+    $element.removeEventListener("keydown", input);
+    window.removeEventListener("focus", focus);
+    $root.removeEventListener("click", focus);
+    $root.innerHtml = "";
   };
 
   return {
     focus,
-    parse,
     clear,
     print: output,
     destroy,
