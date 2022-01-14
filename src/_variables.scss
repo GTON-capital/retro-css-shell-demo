@@ -43,11 +43,11 @@ $scanline-background: linear-gradient(
   transparent 100%
 );
 $output-font-family: 'monofont', 'Courier New', Courier, monospace;
-$output-color: #18ff62;
-$output-text-shadow: rgba(10, 255, 10, 0.8);
+$output-color: #FFFF00;
+$output-text-shadow: rgba(255,255,0 0.8);
 $output-line-height: 1.25;
 $gradient-bottom: rgb(0, 30, 30);
-$gradient-inner: rgb(0, 255, 119);
+$gradient-inner: rgb(255,255,204);
 
 @mixin fill($top: 0, $left: 0, $right: 0, $bottom: 0) {
   position: absolute;
