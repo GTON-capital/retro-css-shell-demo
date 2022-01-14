@@ -143,6 +143,15 @@ const keyboard = (callback) => {
         }
       }
     },
+
+    paste: (ev) => {
+      let paste = (ev.clipboardData || window.clipboardData).getData('text');
+      if(paste) {
+        input.push(paste)
+      } else {
+        ev.preventDefault();
+      }
+    },
   };
 };
 
@@ -258,6 +267,7 @@ export const terminal = (opts) => {
   $element.addEventListener("blur", focus);
   $element.addEventListener("keypress", input);
   $element.addEventListener("keydown", input);
+  $element.addEventListener("paste", input);
   window.addEventListener("focus", focus);
   $root.addEventListener("click", focus);
   $root.appendChild($element);
@@ -271,6 +281,7 @@ export const terminal = (opts) => {
     $element.removeEventListener("blur", focus);
     $element.removeEventListener("keypress", input);
     $element.removeEventListener("keydown", input);
+    $element.addEventListener("paste", input);
     window.removeEventListener("focus", focus);
     $root.removeEventListener("click", focus);
     $root.innerHtml = "";
